@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>مهامي اليومية</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      padding: 20px;
+      text-align: center;
+    }
+    .app {
+      max-width: 450px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px #0001;
+    }
+    input {
+      padding: 12px;
+      width: 65%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    li {
+      padding: 12px;
+      margin: 10px 0;
+      background: #f1f5f9;
+      border-radius: 8px;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      text-align: right;
+    }
+    ul { padding: 0; }
+    .done { text-decoration: line-through; opacity: .5; }
+    .delete { background: #dc2626; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>📋 مهامي اليومية</h1>
+    <p>نظّم يومك وأنجز أهدافك</p>
+
+    <input id="task" placeholder="اكتب مهمة جديدة">
+    <button onclick="addTask()">إضافة</button>
+
+    <h3 id="counter">المهام المكتملة: 0 / 0</h3>
+    <ul id="list"></ul>
+  </div>
+
+  <script>
+    let tasks = JSON.parse(
+      localStorage.getItem("tasks") || "[]"
+    );
+
+    function save() {
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function render() {
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+
+      tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        const title = document.createElement("span");
+        title.textContent = task.text;
+        if (task.done) title.className = "done";
+        title.onclick = () => {
+          tasks[index].done = !tasks[index].done;
+          save();
+          render();
+        };
+
+        const del = document.createElement("button");
+        del.textContent = "حذف";
+        del.className = "delete";
+        del.onclick = () => {
+          tasks.splice(index, 1);
+          save();
+          render();
+        };
+
+        li.append(title, del);
+        list.appendChild(li);
+      });
+
+      const completed = tasks.filter(t => t.done).length;
+      document.getElementById("counter").textContent =
+        `المهام المكتملة: ${completed} / ${tasks.length}`;
+    }
+
+    function addTask() {
+      const input = document.getElementById("task");
+      const text = input.value.trim();
+      if (!text) return;
+
+      tasks.push({ text, done: false });
+      input.value = "";
+      save();
+      render();
+    }
+
+    document.getElementById("task").addEventListener(
+      "keydown",
+      e => {
+        if (e.key === "Enter") addTask();
+      }
+    );
+
+    render();
+  </script>
+</body>
+</html>
